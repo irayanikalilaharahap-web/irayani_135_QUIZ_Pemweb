@@ -1,0 +1,89 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Modal from "../components/Modal";
+import TodoForm from "../components/TodoForm";
+import ConfirmModal from "../components/ConfirmModal";
+import { EyeIcon, TrashIcon } from "../components/Icons";
+
+export default function TodoList({ todos, onAdd, onDelete }) {
+  const navigate = useNavigate();
+  const [showAdd, setShowAdd] = useState(false);
+  const [todoToDelete, setTodoToDelete] = useState(null);
+
+  const handleAdd = (data) => {
+    onAdd(data);
+    setShowAdd(false);
+  };
+
+  const handleDelete = () => {
+    onDelete(todoToDelete.id);
+    setTodoToDelete(null);
+  };
+
+  return (
+    <div className="page">
+      <div className="page-header">
+        <h1>Todo List</h1>
+        <button className="btn btn-blue" onClick={() => setShowAdd(true)}>
+          Tambah Todo
+        </button>
+      </div>
+
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Judul</th>
+              <th>Status</th>
+              <th>Prioritas</th>
+              <th>Deadline</th>
+              <th className="center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {todos.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="empty">
+                  Belum ada tugas. Klik "Tambah Todo" untuk membuat tugas pertama.
+                </td>
+              </tr>
+            ) : (
+              todos.map((todo) => (
+                <tr key={todo.id}>
+                  <td className="truncate" title={todo.title}>{todo.title}</td>
+                  <td>{todo.status}</td>
+                  <td>{todo.priority}</td>
+                  <td>{todo.deadline}</td>
+                  <td className="center">
+                    <div className="icon-actions">
+                      <button className="icon-btn btn-blue" aria-label={`Lihat detail ${todo.title}`} onClick={() => navigate(`/todo/${todo.id}`)}>
+                        <EyeIcon />
+                      </button>
+                      <button className="icon-btn btn-red" aria-label={`Hapus ${todo.title}`} onClick={() => setTodoToDelete(todo)}>
+                        <TrashIcon />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {showAdd && (
+        <Modal title="Tambah Todo" onClose={() => setShowAdd(false)}>
+          <TodoForm submitLabel="Tambah" onSubmit={handleAdd} onCancel={() => setShowAdd(false)} />
+        </Modal>
+      )}
+
+      {todoToDelete && (
+        <ConfirmModal
+          message={`Yakin ingin menghapus tugas "${todoToDelete.title}"?`}
+          onConfirm={handleDelete}
+          onCancel={() => setTodoToDelete(null)}
+        />
+      )}
+    </div>
+  );
+}
